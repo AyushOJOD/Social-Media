@@ -9,10 +9,15 @@ import {
   updateProfile,
 } from "../controllers/userController.js";
 import { isAuthenticated } from "../utils/features.js";
+import { upload } from "../middlewares/multer.middleware.js";
 
 const router = express.Router();
 
-router.put("/createProfile", isAuthenticated, createProfile);
+router.put(
+  "/createProfile",
+  upload.single("profile_picture_url"),
+  createProfile
+);
 router.get("/getProfile", isAuthenticated, getProfile);
 router.patch("/updateProfile", isAuthenticated, updateProfile);
 router.delete("/deleteProfile", isAuthenticated, deleteUser);

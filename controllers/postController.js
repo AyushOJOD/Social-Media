@@ -113,3 +113,35 @@ export const getMyFeed = async (req, res, next) => {
     next(error);
   }
 };
+
+export const likePost = async (req, res, next) => {
+  try {
+    const id = getUserIdFromCookie(req);
+
+    if (!id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { postId } = req.params;
+
+    const post = await Post.findOne({ uuid: postId });
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.liked_by.includes(id)) {
+      post.liked_by = post.liked_by.filter((user) => user !== id);
+      post.likes -= 1;
+    } else {
+      post.liked_by.push(id);
+      post.likes += 1;
+    }
+
+    await post.save();
+
+    res.status(200).json({ message: "Post liked successfully" });
+  } catch (error) {
+    next(error);
+  }
+};

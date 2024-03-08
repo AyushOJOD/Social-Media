@@ -1,36 +1,32 @@
 import { User } from "../models/userModel.js";
-import { upload as multerUpload } from "../middlewares/multer.middleware.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { upload } from "../middlewares/multer.middleware.js";
 import { getUserIdFromCookie } from "../utils/features.js";
 
 export const createProfile = async (req, res, next) => {
   try {
     const { bio } = req.body;
 
-    multerUpload.single("profilePic")(req, res, async (err) => {
-      if (err) {
-        return next(new Errorhandler(err.message, 400));
-      }
+    const userId = getUserIdFromCookie(req);
 
-      if (!req.file) {
-        return next(new Errorhandler("Please upload a file", 400));
-      }
+    const user = await User.findById(userId);
 
-      const cloudinaryResponse = await uploadOnCloudinary(req.file.path);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-      const userId = getUserIdFromCookie(req);
+    if (bio) {
+      user.bio = bio;
+    }
 
-      console.log(userId);
+    if (req.file) {
+      user.profile_picture_url = req.file.path;
+    }
 
-      await User.findByIdAndUpdate(userId, {
-        profilePic: cloudinaryResponse.url,
-        bio: bio,
-      });
+    await user.save();
 
-      res.status(200).json({
-        message: "Profile created successfully",
-        imageUrl: cloudinaryResponse.url,
-      });
+    res.status(200).json({
+      message: "User profile created successfully",
+      profile_url: user.profile_picture_url,
     });
   } catch (error) {
     next(error);

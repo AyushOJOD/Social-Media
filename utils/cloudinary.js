@@ -8,21 +8,32 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (localFilePath) => {
+const uploadOnCloudinary = async (avatar, fileName) => {
   try {
-    if (!localFilePath) return new Errorhandler("Please provide a file", 400);
+    if (!avatar) return new Errorhandler("Please provide a file", 400);
 
     // uploading the file on cloudinary
 
-    const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto",
-    });
+    //  const response =  cloudinary.uploader.upload(
+    //     avatar,
+    //     { public_id: fileName },
+    //     function (error, result) {
+    //       console.log(result);
+    //     }
+    //   );
 
-    console.log(response.url);
+    const response = cloudinary.uploader.upload_large(
+      avatar,
+      { resource_type: "image" },
+      { public_id: fileName },
+      function (error, result) {
+        console.log(result, error);
+      }
+    );
 
     return response;
   } catch (error) {
-    fs.unlinkSync(localFilePath); // remove the locally saved file
+    fs.unlinkSync(avatar); // remove the locally saved file
 
     return new Errorhandler("File upload failed", 500);
   }
