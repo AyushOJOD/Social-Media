@@ -49,6 +49,7 @@ export const getProfile = async (req, res, next) => {
       bio: userProfile.bio,
       followers: userProfile.followers.length,
       following: userProfile.following.length,
+      profile_picture_url: userProfile.profile_picture_url,
     };
 
     res.status(200).json({ profile: responseData });
@@ -60,7 +61,7 @@ export const getProfile = async (req, res, next) => {
 export const updateProfile = async (req, res, next) => {
   try {
     const userId = getUserIdFromCookie(req);
-    const { bio, profile_picture, username } = req.body;
+    const { bio, username } = req.body;
 
     let userProfile = await User.findOne({ _id: userId });
 
@@ -70,12 +71,6 @@ export const updateProfile = async (req, res, next) => {
 
     if (bio) {
       userProfile.bio = bio;
-    }
-
-    if (profile_picture) {
-      const cloudinaryResponse = await uploadOnCloudinary(profile_picture);
-
-      userProfile.profile_picture_url = cloudinaryResponse.url;
     }
 
     if (username) {
@@ -97,13 +92,7 @@ export const deleteUser = async (req, res, next) => {
   try {
     const userId = getUserIdFromCookie(req);
 
-    const user = await User.findOne({ _id: userId });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    await user.remove();
+    const user = await User.findOneAndDelete(userId);
 
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
@@ -119,6 +108,9 @@ export const followUser = async (req, res, next) => {
     const me = await User.findById(userId);
     const follow = await User.findById(followId);
 
+    console.log(me);
+    console.log(follow);
+
     if (!me || !follow) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -133,7 +125,20 @@ export const followUser = async (req, res, next) => {
     await me.save();
     await follow.save();
 
-    res.status(200).json({ message: "User followed successfully" });
+    const populatedMe = await User.findById(userId).populate(
+      "following",
+      "username"
+    );
+    const populatedFollow = await User.findById(followId).populate(
+      "followers",
+      "username"
+    );
+
+    res.status(200).json({
+      message: "User followed successfully",
+      populatedMe,
+      populatedFollow,
+    });
   } catch (error) {
     next(error);
   }
@@ -172,7 +177,9 @@ export const getFollowers = async (req, res, next) => {
   try {
     const userId = getUserIdFromCookie(req);
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId)
+      .populate("followers", "username uuid")
+      .populate("following", "username uuid");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });

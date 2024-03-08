@@ -21,8 +21,8 @@ router.put(
 router.get("/getProfile", isAuthenticated, getProfile);
 router.patch("/updateProfile", isAuthenticated, updateProfile);
 router.delete("/deleteProfile", isAuthenticated, deleteUser);
-router.post("/follow/:id", isAuthenticated, followUser);
+router.post("/follow/:followId", isAuthenticated, followUser);
 router.post("/unfollow/:id", isAuthenticated, unfollowUser);
-router.post("/getFollowers", isAuthenticated, getFollowers);
+router.get("/getFollowers", isAuthenticated, getFollowers);
 
 export default router;

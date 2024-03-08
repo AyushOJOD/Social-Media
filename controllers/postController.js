@@ -26,9 +26,20 @@ export const createPost = async (req, res, next) => {
       description,
     });
 
-    res.status(201).json({ message: "Post created successfully", post });
+    res.status(201).json({
+      message: "Post created successfully",
+      post: {
+        uuid: postId,
+        creator: id,
+        title,
+        description,
+      },
+    });
   } catch (error) {
-    return new Errorhandler(error.message, 500);
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -69,12 +80,6 @@ export const getAllPosts = async (req, res, next) => {
 export const deletePost = async (req, res, next) => {
   try {
     const { postId } = req.params;
-
-    const post = await Post.findOne({ uuid: postId });
-
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
 
     await Post.deleteOne({ uuid: postId });
 

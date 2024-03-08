@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 import { sendCookie } from "../utils/features.js";
 import Errorhandler from "../middlewares/error.js";
 import { v4 as uuidv4 } from "uuid";
-import validator from "validator";
 
 export const register = async (req, res, next) => {
   try {
@@ -13,13 +12,19 @@ export const register = async (req, res, next) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email)) {
-      return next(new Errorhandler("Invalid email address", 400));
+      res.json({
+        success: false,
+        message: "Invalid email",
+      });
     }
 
     let user = await User.findOne({ email });
 
     if (user) {
-      return next(new Errorhandler("User already exists", 400));
+      res.json({
+        success: false,
+        message: "User already exists",
+      });
     } else {
       const userId = uuidv4();
 
@@ -46,7 +51,10 @@ export const login = async (req, res, next) => {
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      return next(new Errorhandler("Invalid credentials", 401));
+      res.json({
+        success: false,
+        message: "User not found",
+      });
     } else {
       const isMatch = await bcrypt.compare(password, user.password);
 
