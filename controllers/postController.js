@@ -59,7 +59,7 @@ export const getMyPosts = async (req, res, next) => {
 
     res.status(200).json({ posts });
   } catch (error) {
-    next(error);
+    res.json({ message: error.message });
   }
 };
 
@@ -73,7 +73,7 @@ export const getAllPosts = async (req, res, next) => {
 
     res.status(200).json({ posts });
   } catch (error) {
-    next(error);
+    res.json({ message: error.message });
   }
 };
 
@@ -85,7 +85,7 @@ export const deletePost = async (req, res, next) => {
 
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
-    next(error);
+    res.json({ message: error.message });
   }
 };
 
@@ -115,7 +115,7 @@ export const getMyFeed = async (req, res, next) => {
 
     res.status(200).json({ posts });
   } catch (error) {
-    next(error);
+    res.json({ message: error.message });
   }
 };
 
@@ -147,6 +147,6 @@ export const likePost = async (req, res, next) => {
 
     res.status(200).json({ message: "Post liked successfully" });
   } catch (error) {
-    next(error);
+    res.json({ message: error.message });
   }
 };

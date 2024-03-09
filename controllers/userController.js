@@ -1,6 +1,8 @@
 import { User } from "../models/userModel.js";
-import { upload } from "../middlewares/multer.middleware.js";
+import { Post } from "../models/postModel.js";
 import { getUserIdFromCookie } from "../utils/features.js";
+import uploadFile from "../utils/cloudinary.js";
+import fs from "fs";
 
 export const createProfile = async (req, res, next) => {
   try {
@@ -18,8 +20,23 @@ export const createProfile = async (req, res, next) => {
       user.bio = bio;
     }
 
-    if (req.file) {
-      user.profile_picture_url = req.file.path;
+    const filePath = req.file.destination + "/" + req.file.filename;
+
+    const fileData = fs.readFileSync(filePath);
+
+    // Convert the file data to a base64-encoded string
+    const base64Data = fileData.toString("base64");
+
+    let profile;
+    if (filePath) {
+      profile = await uploadFile(base64Data);
+      user.profile_picture_url = profile.secure_url;
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+      });
     }
 
     await user.save();
@@ -29,7 +46,7 @@ export const createProfile = async (req, res, next) => {
       profile_url: user.profile_picture_url,
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -54,7 +71,7 @@ export const getProfile = async (req, res, next) => {
 
     res.status(200).json({ profile: responseData });
   } catch (error) {
-    next(error);
+    res.json({ message: error.message });
   }
 };
 
@@ -84,7 +101,7 @@ export const updateProfile = async (req, res, next) => {
       profile: userProfile,
     });
   } catch (error) {
-    next(error);
+    res.json({ message: error.message });
   }
 };
 
@@ -94,9 +111,13 @@ export const deleteUser = async (req, res, next) => {
 
     const user = await User.findOneAndDelete(userId);
 
-    res.status(200).json({ message: "User deleted successfully" });
+    const posts = await Post.deleteMany({ creator: userId });
+
+    res
+      .status(200)
+      .json({ message: "User deleted successfully along with its posts" });
   } catch (error) {
-    next(error);
+    res.json({ message: error.message });
   }
 };
 
@@ -107,9 +128,6 @@ export const followUser = async (req, res, next) => {
 
     const me = await User.findById(userId);
     const follow = await User.findById(followId);
-
-    console.log(me);
-    console.log(follow);
 
     if (!me || !follow) {
       return res.status(404).json({ message: "User not found" });
@@ -140,7 +158,7 @@ export const followUser = async (req, res, next) => {
       populatedFollow,
     });
   } catch (error) {
-    next(error);
+    res.json({ message: error.message });
   }
 };
 
@@ -169,7 +187,7 @@ export const unfollowUser = async (req, res, next) => {
 
     res.status(200).json({ message: "User unfollowed successfully" });
   } catch (error) {
-    next(error);
+    res.json({ message: error.message });
   }
 };
 
@@ -190,6 +208,6 @@ export const getFollowers = async (req, res, next) => {
 
     res.status(200).json({ followers, followings });
   } catch (error) {
-    next(error);
+    res.json({ message: error.message });
   }
 };
