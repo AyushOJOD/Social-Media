@@ -32,6 +32,10 @@ app.use(
   })
 );
 
+app.use("/", (req, res) => {
+  res.send("Welcome to the server");
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/post", postRoutes);
