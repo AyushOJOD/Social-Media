@@ -1,6 +1,6 @@
 import { User } from "../models/userModel.js";
 import bcrypt from "bcrypt";
-import { sendCookie } from "../utils/features.js";
+import { isAuthenticated, sendCookie } from "../utils/features.js";
 import Errorhandler from "../middlewares/error.js";
 import { v4 as uuidv4 } from "uuid";
 
