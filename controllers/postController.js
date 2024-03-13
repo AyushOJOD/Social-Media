@@ -1,7 +1,9 @@
 import { Post } from "../models/postModel.js";
 import { User } from "../models/userModel.js";
+import uploadFile from "../utils/cloudinary.js";
 import { getUserIdFromCookie } from "../utils/features.js";
 import { v4 as uuidv4 } from "uuid";
+import fs from "fs";
 
 export const createPost = async (req, res, next) => {
   try {
@@ -19,11 +21,33 @@ export const createPost = async (req, res, next) => {
 
     const postId = uuidv4();
 
+    const filePath = req.file.destination + "/" + req.file.filename;
+
+    const fileData = fs.readFileSync(filePath);
+
+    // Convert the file data to a base64-encoded string
+    const base64Data = fileData.toString("base64");
+
+    let postImage;
+    let postImageUrl;
+
+    if (filePath) {
+      postImage = await uploadFile(base64Data);
+      postImageUrl = postImage.secure_url;
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+      });
+    }
+
     const post = Post.create({
       uuid: postId,
       creator: id,
       title,
       description,
+      post_url: postImageUrl,
     });
 
     res.status(201).json({
@@ -33,6 +57,7 @@ export const createPost = async (req, res, next) => {
         creator: id,
         title,
         description,
+        post_url: postImageUrl,
       },
     });
   } catch (error) {

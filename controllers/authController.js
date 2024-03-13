@@ -1,7 +1,6 @@
 import { User } from "../models/userModel.js";
 import bcrypt from "bcrypt";
-import { isAuthenticated, sendCookie } from "../utils/features.js";
-import Errorhandler from "../middlewares/error.js";
+import { sendCookie } from "../utils/features.js";
 import { v4 as uuidv4 } from "uuid";
 
 export const register = async (req, res, next) => {
