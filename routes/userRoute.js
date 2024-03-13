@@ -19,7 +19,12 @@ router.put(
   createProfile
 );
 router.get("/getProfile", isAuthenticated, getProfile);
-router.patch("/updateProfile", isAuthenticated, updateProfile);
+router.patch(
+  "/updateProfile",
+  upload.single("profile_picture_url"),
+  isAuthenticated,
+  updateProfile
+);
 router.delete("/deleteProfile", isAuthenticated, deleteUser);
 router.post("/follow/:followId", isAuthenticated, followUser);
 router.post("/unfollow/:id", isAuthenticated, unfollowUser);

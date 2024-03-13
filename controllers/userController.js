@@ -94,6 +94,25 @@ export const updateProfile = async (req, res, next) => {
       userProfile.username = username;
     }
 
+    const filePath = req.file.destination + "/" + req.file.filename;
+
+    const fileData = fs.readFileSync(filePath);
+
+    // Convert the file data to a base64-encoded string
+    const base64Data = fileData.toString("base64");
+
+    let profile;
+    if (filePath) {
+      profile = await uploadFile(base64Data);
+      userProfile.profile_picture_url = profile.secure_url;
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+      });
+    }
+
     await userProfile.save();
 
     res.status(200).json({
