@@ -7,6 +7,9 @@ export const addMessage = async (req, res, next) => {
     if (!from || !to || !message)
       return res.json({ message: "All fields are required", status: false });
 
+    if (message === "")
+      return res.json({ message: "Message cannot be empty", status: false });
+
     const data = await Message.create({
       message: { text: message },
       users: [from, to],
