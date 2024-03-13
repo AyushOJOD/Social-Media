@@ -54,6 +54,8 @@ export const getProfile = async (req, res, next) => {
   try {
     const userId = getUserIdFromCookie(req);
 
+    if (!userId) return res.status(404).json({ message: "User not found" });
+
     const userProfile = await User.findOne({ _id: userId });
 
     if (!userProfile) {
